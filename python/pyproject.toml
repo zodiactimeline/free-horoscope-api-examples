@@ -1,0 +1,15 @@
+[project]
+name = "zodiac-timeline-free-horoscope-api-python"
+version = "1.0.0"
+description = "Python example: daily horoscopes for all 12 zodiac signs from the Zodiac Timeline free API (zodiactimeline.com)."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+
+[project.urls]
+Homepage = "https://zodiactimeline.com/horoscope-rss-feed/"
+Repository = "https://github.com/zodiactimeline/free-horoscope-api-examples"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

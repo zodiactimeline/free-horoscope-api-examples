@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% if error %}
+  <title>Horoscopes unavailable · Zodiac Timeline</title>
+  {% else %}
+  <title>Daily Horoscopes for {{ selected_date | long_date }} · Zodiac Timeline</title>
+  {% endif %}
+  <meta name="description" content="Free daily horoscopes for all 12 zodiac signs, powered by the Zodiac Timeline free API.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Daily Horoscopes</h1>
+      <p class="tagline">All 12 signs, 5 days. Horoscopes by <a href="{{ credit.url }}">{{ credit.name }}</a>.</p>
+    </div>
+  </header>
+  <main class="container">
+    {% if error %}
+    <section class="error">
+      <h2>Horoscopes are unavailable right now</h2>
+      <p>We could not reach the Zodiac Timeline free API. Please try again in a few minutes.</p>
+      <p>You can still read today's horoscopes at <a href="{{ credit.url }}">zodiactimeline.com</a>.</p>
+    </section>
+    {% else %}
+    <section class="controls">
+      <nav class="tabs" aria-label="Choose a day">
+        {% for date in dates %}
+        <a class="tab" href="{{ url_for('index', date=date, sign=selected_sign) }}"{% if date == selected_date %} aria-current="page"{% endif %}>{{ date | tab_label }}</a>
+        {% endfor %}
+      </nav>
+      <nav class="chips" aria-label="Choose a sign">
+        <a class="chip" href="{{ url_for('index', date=selected_date) }}"{% if not selected_sign %} aria-current="page"{% endif %}>All signs</a>
+        {% for sign in signs %}
+        <a class="chip" href="{{ url_for('index', date=selected_date, sign=sign.key) }}"{% if sign.key == selected_sign %} aria-current="page"{% endif %}>{{ sign.glyph }} {{ sign.name }}</a>
+        {% endfor %}
+      </nav>
+    </section>
+    {% if stale %}
+    <p class="notice">Showing the last saved copy because the Zodiac Timeline free API could not be reached just now.</p>
+    {% endif %}
+    <h2 class="date-heading">{{ selected_date | long_date }}</h2>
+    <section class="grid">
+      {% for h in horoscopes %}
+      <article class="card">
+        <header class="card-header">
+          <span class="glyph" aria-hidden="true">{{ h.glyph }}</span>
+          <div>
+            <h2>{{ h.signName }}</h2>
+            <p class="muted">{{ sign_by_key[h.sign].dates if h.sign in sign_by_key else '' }}</p>
+          </div>
+        </header>
+        {% if h.score is not none %}
+        <div class="score" role="img" aria-label="Day score {{ '%.1f' | format(h.score) }} out of 10">
+          <div class="score-bar"><span style="width: {{ (h.score * 10) | round | int }}%"></span></div>
+          <span class="score-value">{{ '%.1f' | format(h.score) }} / 10</span>
+        </div>
+        {% endif %}
+        <div class="reading">
+          {% for paragraph in h.paragraphs %}
+          <p>{{ paragraph }}</p>
+          {% endfor %}
+        </div>
+        <a class="read-more" href="{{ h.link }}">Read on Zodiac Timeline →</a>
+      </article>
+      {% endfor %}
+    </section>
+    {% endif %}
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <p>Horoscopes provided by <a href="{{ credit.url }}">{{ credit.name }}</a>, free for anyone to use with credit.
+        See the <a href="{{ credit.terms }}">Zodiac Timeline free API</a> page for details.</p>
+      <p class="muted">Example app from <a href="https://github.com/zodiactimeline/free-horoscope-api-examples">free-horoscope-api-examples</a> (Python).</p>
+    </div>
+  </footer>
+</body>
+</html>
