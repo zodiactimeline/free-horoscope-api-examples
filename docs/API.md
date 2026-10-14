@@ -1,10 +1,10 @@
-# Zodiac Timeline Free API Reference
+# Zodiac Timeline Horoscope API Reference
 
-The Zodiac Timeline free API gives you daily Western astrology horoscopes for all 12 zodiac signs from
+The Zodiac Timeline Horoscope API gives you daily Western astrology horoscopes for all 12 zodiac signs from
 [Zodiac Timeline](https://zodiactimeline.com). It is free for anyone to use in a website, app, newsletter or
 other product, on one condition: a visible credit to Zodiac Timeline.
 
-Official page: **https://zodiactimeline.com/horoscope-rss-feed/**
+Official page: **https://zodiactimeline.com/horoscope-api/**
 
 - [Endpoint](#endpoint)
 - [Response](#response)
@@ -27,11 +27,8 @@ GET https://zodiactimeline.com/feed.xml
 | Method | `GET` |
 | Authentication | None. No API key, account or sign-up. |
 | Query parameters | None. Every request returns the full 60-item response. |
-| Response type | `application/xml` (RSS 2.0), UTF-8 |
+| Response type | `application/xml`, UTF-8 |
 | Response size | About 55 KB |
-
-The same address also works as an ordinary RSS feed. You can paste it into any feed reader, website builder
-feed block or feed plugin.
 
 ```bash
 curl https://zodiactimeline.com/feed.xml
@@ -39,7 +36,7 @@ curl https://zodiactimeline.com/feed.xml
 
 ## Response
 
-The response is an RSS 2.0 document. It has one `<channel>` holding **60 `<item>` elements: 12 signs × 5 days**.
+The response is an XML document. It has one `<channel>` holding **60 `<item>` elements: 12 signs × 5 days**.
 Zodiac Timeline adds three fields in its own XML namespace:
 
 ```xml
@@ -50,12 +47,11 @@ Shortened example:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:zt="https://zodiactimeline.com/feed">
+<rss version="2.0" xmlns:zt="https://zodiactimeline.com/feed">
   <channel>
     <title>Zodiac Timeline: Daily Horoscopes</title>
     <link>https://zodiactimeline.com</link>
-    <atom:link href="https://zodiactimeline.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <description>Zodiac Timeline RSS feed: daily horoscopes for all 12 signs over a 5-day timeline …</description>
+    <description>Zodiac Timeline Horoscope API: daily horoscopes for all 12 signs over a 5-day timeline …</description>
     <language>en</language>
     <lastBuildDate>Tue, 13 Oct 2026 19:10:37 +0000</lastBuildDate>
 
@@ -75,7 +71,7 @@ Shortened example:
 </rss>
 ```
 
-A complete real response is saved in [`fixtures/feed.sample.xml`](../fixtures/feed.sample.xml).
+A complete real response is saved in [`fixtures/api-response.sample.xml`](../fixtures/api-response.sample.xml).
 
 ## Fields
 
@@ -109,8 +105,7 @@ Tips:
   data. To show paragraphs, split it on newlines.
 - `zt:score` works well as a bar, stars or a "good day / tough day" label. The examples show it as `7.4 / 10`
   with a bar.
-- Look the `zt:` elements up through their namespace (`https://zodiactimeline.com/feed`) rather than relying on
-  the `zt` prefix, if your XML library supports it.
+- Look the `zt:` elements up through their namespace rather than relying on the `zt` prefix, if your XML library supports it.
 
 ## Dates and the update schedule
 
@@ -149,7 +144,7 @@ The API does not send CORS headers for other websites, so calling it with `fetch
 JavaScript in a visitor's browser **will be blocked**. Call it from your own server instead:
 
 ```
-Browser  ──►  your server  ──►  https://zodiactimeline.com/feed.xml
+Browser  ──►  your server  ──►  Zodiac Timeline Horoscope API
                   │
                   └── cache, parse, filter, then return HTML or JSON to the browser
 ```
@@ -171,8 +166,8 @@ Treat the API like any network dependency:
 
 ## Credit and terms
 
-The free API has one condition: show the name **Zodiac Timeline** near the horoscopes, where your readers can
-see it, as a link to **https://zodiactimeline.com**:
+The Horoscope API is free, with one condition: show the name **Zodiac Timeline** near the horoscopes, where
+your readers can see it, as a link to **https://zodiactimeline.com**:
 
 ```html
 <a href="https://zodiactimeline.com">Zodiac Timeline</a>
@@ -182,7 +177,7 @@ Good places for it: under the horoscope heading, next to each reading, or in a "
 horoscopes. Linking each reading to its `link` page on Zodiac Timeline is a nice extra for your readers.
 
 This permission is part of Zodiac Timeline's Terms of Use. The authoritative terms are on the official page:
-https://zodiactimeline.com/horoscope-rss-feed/
+https://zodiactimeline.com/horoscope-api/
 
 ## FAQ
 
@@ -190,17 +185,15 @@ https://zodiactimeline.com/horoscope-rss-feed/
 Yes. There is no cost. The only condition is the visible credit described above.
 
 **Do I need a key or an account?**
-No. Send a `GET` request to `https://zodiactimeline.com/feed.xml`.
+No. Send a `GET` request to the [endpoint](#endpoint).
 
 **Can I show only one sign?**
 Yes. Filter the items by `zt:sign`.
 
 **Can I get more than five days?**
-The free API holds five days. [zodiactimeline.com](https://zodiactimeline.com) shows 15 days of horoscopes,
+The Horoscope API holds five days. [zodiactimeline.com](https://zodiactimeline.com) shows 15 days of horoscopes,
 like a weather forecast, for every sign.
 
 **Which astrology system is used?**
 Western astrology, computed by Zodiac Timeline's own astronomy and astrology engine.
 
-**Can I use it in a newsletter or a website builder without code?**
-Yes. Paste `https://zodiactimeline.com/feed.xml` into any RSS feed block or plugin, and keep the credit visible.

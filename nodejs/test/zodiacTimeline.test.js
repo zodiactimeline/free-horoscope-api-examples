@@ -8,18 +8,18 @@ import {
   filterHoroscopes,
   listDates,
   nextRefreshTime,
-  parseFeed,
+  parseResponse,
 } from '../src/zodiacTimeline.js';
 import { createApp } from '../src/server.js';
 import { escapeHtml } from '../src/render.js';
 
-// A saved copy of https://zodiactimeline.com/feed.xml, so the tests never hit the network.
-const SAMPLE_XML = readFileSync(new URL('../../fixtures/feed.sample.xml', import.meta.url), 'utf8');
+// A saved Horoscope API response, so the tests never hit the network.
+const SAMPLE_XML = readFileSync(new URL('../../fixtures/api-response.sample.xml', import.meta.url), 'utf8');
 
 const fakeFetch = (body, status = 200) => async () => new Response(body, { status });
 
-describe('parseFeed', () => {
-  const horoscopes = parseFeed(SAMPLE_XML);
+describe('parseResponse', () => {
+  const horoscopes = parseResponse(SAMPLE_XML);
 
   it('returns 60 horoscopes: 12 signs × 5 days', () => {
     assert.equal(horoscopes.length, 60);
@@ -47,16 +47,16 @@ describe('parseFeed', () => {
 
   it('returns a null score when an item has no valid score', () => {
     const xml = SAMPLE_XML.replace(/<zt:score>[^<]*<\/zt:score>/, '<zt:score></zt:score>');
-    assert.equal(parseFeed(xml).filter((h) => h.score === null).length, 1);
+    assert.equal(parseResponse(xml).filter((h) => h.score === null).length, 1);
   });
 
-  it('rejects XML that is not the feed', () => {
-    assert.throws(() => parseFeed('<html></html>'), /no <item> elements/);
+  it('rejects XML that is not the API response', () => {
+    assert.throws(() => parseResponse('<html></html>'), /no <item> elements/);
   });
 });
 
 describe('helpers', () => {
-  const horoscopes = parseFeed(SAMPLE_XML);
+  const horoscopes = parseResponse(SAMPLE_XML);
   const dates = listDates(horoscopes);
 
   it('filters by sign and date', () => {
@@ -65,7 +65,7 @@ describe('helpers', () => {
     assert.equal(filterHoroscopes(horoscopes, { sign: 'leo', date: dates[0] }).length, 1);
   });
 
-  it('defaults to today (UTC) when it is in the feed, else the middle day', () => {
+  it('defaults to today (UTC) when the API response has it, else the middle day', () => {
     assert.equal(defaultDate(dates, Date.parse(`${dates[1]}T23:00:00Z`)), dates[1]);
     assert.equal(defaultDate(dates, Date.parse('2000-01-01T00:00:00Z')), dates[2]);
   });
@@ -128,7 +128,7 @@ describe('createZodiacTimelineClient', () => {
 describe('server', () => {
   let server;
   let baseUrl;
-  const dates = listDates(parseFeed(SAMPLE_XML));
+  const dates = listDates(parseResponse(SAMPLE_XML));
 
   before(async () => {
     const app = createApp({ client: createZodiacTimelineClient({ fetchImpl: fakeFetch(SAMPLE_XML) }) });

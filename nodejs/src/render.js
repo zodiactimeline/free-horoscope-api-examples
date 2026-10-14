@@ -4,6 +4,7 @@
  */
 import { CREDIT, SIGNS, getSign, todayUtc } from './zodiacTimeline.js';
 
+/** Make text safe to put inside HTML, including attribute values. */
 export function escapeHtml(value) {
   return String(value)
     .replaceAll('&', '&amp;')
@@ -13,11 +14,15 @@ export function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
+// Date formats for the day tabs ("Wed, Oct 14") and the page heading ("Wednesday, October 14, 2026").
+// timeZone is UTC because the API's dates are UTC dates.
 const dayFormat = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
 const longFormat = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 
+// Turn a YYYY-MM-DD string into a Date at midnight UTC on that day.
 const asUtcDate = (isoDate) => new Date(`${isoDate}T00:00:00Z`);
 
+/** Link to the page for a date and sign, leaving out any parameter that is not set. */
 function pageUrl({ date, sign }) {
   const params = new URLSearchParams();
   if (date) params.set('date', date);
@@ -26,6 +31,7 @@ function pageUrl({ date, sign }) {
   return query ? `/?${query}` : '/';
 }
 
+/** The shared page shell: head, header with the credit, main content and footer. */
 function layout({ title, body }) {
   return `<!doctype html>
 <html lang="en">
@@ -33,7 +39,7 @@ function layout({ title, body }) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(title)}</title>
-  <meta name="description" content="Free daily horoscopes for all 12 zodiac signs, powered by the Zodiac Timeline free API.">
+  <meta name="description" content="Free daily horoscopes for all 12 zodiac signs, powered by the Zodiac Timeline Horoscope API.">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -49,7 +55,7 @@ ${body}
   <footer class="site-footer">
     <div class="container">
       <p>Horoscopes provided by <a href="${CREDIT.url}">${CREDIT.name}</a>, free for anyone to use with credit.
-        See the <a href="${CREDIT.terms}">Zodiac Timeline free API</a> page for details.</p>
+        See the <a href="${CREDIT.terms}">Zodiac Timeline Horoscope API</a> page for details.</p>
       <p class="muted">Example app from <a href="https://github.com/zodiactimeline/free-horoscope-api-examples">free-horoscope-api-examples</a> (Node.js).</p>
     </div>
   </footer>
@@ -58,6 +64,7 @@ ${body}
 `;
 }
 
+/** One tab per day in the API response. The tab for the current UTC date is labelled "Today". */
 function dayTabs({ dates, selectedDate, selectedSign }) {
   const today = todayUtc();
   const tabs = dates
@@ -72,6 +79,7 @@ function dayTabs({ dates, selectedDate, selectedSign }) {
       </nav>`;
 }
 
+/** "All signs" plus one chip per sign. The selected one gets aria-current so it is styled and announced. */
 function signFilter({ selectedDate, selectedSign }) {
   const chip = (key, label) => {
     const current = (key ?? '') === (selectedSign ?? '') ? ' aria-current="page"' : '';
@@ -83,6 +91,7 @@ function signFilter({ selectedDate, selectedSign }) {
       </nav>`;
 }
 
+/** The day score as a bar and a number out of 10. Nothing is shown when the score is missing. */
 function scoreBar(score) {
   if (score === null) return '';
   return `<div class="score" role="img" aria-label="Day score ${score.toFixed(1)} out of 10">
@@ -91,6 +100,7 @@ function scoreBar(score) {
         </div>`;
 }
 
+/** One horoscope: sign, date range, score, the reading and a link to the full page on Zodiac Timeline. */
 function card(h) {
   const paragraphs = h.paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join('\n          ');
   return `<article class="card">
@@ -109,9 +119,10 @@ function card(h) {
       </article>`;
 }
 
+/** The full horoscope page for one day, optionally narrowed to one sign. */
 export function renderPage({ horoscopes, dates, selectedDate, selectedSign, stale }) {
   const notice = stale
-    ? `<p class="notice">Showing the last saved copy because the Zodiac Timeline free API could not be reached just now.</p>\n`
+    ? `<p class="notice">Showing the last saved copy because the Zodiac Timeline Horoscope API could not be reached just now.</p>\n`
     : '';
   const heading = longFormat.format(asUtcDate(selectedDate));
   const body = `    <section class="controls">
@@ -125,6 +136,7 @@ export function renderPage({ horoscopes, dates, selectedDate, selectedSign, stal
   return layout({ title: `Daily Horoscopes for ${heading} · Zodiac Timeline`, body });
 }
 
+/** Shown when the API cannot be reached and there is no saved copy to fall back on. */
 export function renderErrorPage({ message }) {
   const body = `    <section class="error">
       <h2>Horoscopes are unavailable right now</h2>

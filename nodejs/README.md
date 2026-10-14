@@ -1,7 +1,8 @@
-# Node.js example · Zodiac Timeline free horoscope API
+# Node.js example · Zodiac Timeline Horoscope API
 
-A small [Express](https://expressjs.com) server that calls the [Zodiac Timeline](https://zodiactimeline.com)
-free API on the server and serves daily horoscopes for all 12 zodiac signs as an HTML page and as JSON.
+A small [Express](https://expressjs.com) server that calls the free
+[Zodiac Timeline Horoscope API](https://zodiactimeline.com/horoscope-api/) on the server and serves daily
+horoscopes for all 12 zodiac signs as an HTML page and as JSON.
 
 ← Back to the [main README](../README.md) · [API reference](../docs/API.md)
 
@@ -32,7 +33,7 @@ Example JSON response (`/api/horoscopes?sign=leo`, shortened):
   "credit": {
     "name": "Zodiac Timeline",
     "url": "https://zodiactimeline.com",
-    "terms": "https://zodiactimeline.com/horoscope-rss-feed/"
+    "terms": "https://zodiactimeline.com/horoscope-api/"
   },
   "source": "https://zodiactimeline.com/feed.xml",
   "fetchedAt": "2026-10-13T21:15:52.000Z",
@@ -62,23 +63,23 @@ leaves out the score bar.
 
 ```
 src/
-  zodiacTimeline.js   Zodiac Timeline free API client: fetch, parse, cache, helpers
+  zodiacTimeline.js   Zodiac Timeline Horoscope API client: fetch, parse, cache, helpers
   server.js           Express routes (HTML page, JSON, health check)
   render.js           HTML templates (template literals with HTML escaping)
 public/styles.css     Page styles (light and dark mode)
-test/                 Offline tests against ../fixtures/feed.sample.xml
+test/                 Offline tests against ../fixtures/api-response.sample.xml
 ```
 
-1. **Fetch.** `fetchFeedXml()` sends a `GET` to `https://zodiactimeline.com/feed.xml` with a 10-second timeout
+1. **Fetch.** `fetchApiXml()` sends a `GET` to the Horoscope API endpoint with a 10-second timeout
    and a descriptive `User-Agent`.
-2. **Parse.** `parseFeed()` uses [fast-xml-parser](https://github.com/NaturalIntelligence/fast-xml-parser) to turn
+2. **Parse.** `parseResponse()` uses [fast-xml-parser](https://github.com/NaturalIntelligence/fast-xml-parser) to turn
    the 60 `<item>` elements into plain objects. It reads `zt:sign`, `zt:date` and `zt:score`, and splits the
    reading into paragraphs.
 3. **Cache.** `createZodiacTimelineClient()` keeps the result in memory until the next daily update (00:10 UTC). If a
    refresh fails, it keeps serving the last good copy and marks it `stale`.
 4. **Render.** `server.js` filters by date and sign, and `render.js` builds the page. Every value from the API is
    escaped with `escapeHtml()`.
-5. **Credit.** The header and footer link to [Zodiac Timeline](https://zodiactimeline.com), as the free API
+5. **Credit.** The header and footer link to [Zodiac Timeline](https://zodiactimeline.com), as the Horoscope API
    requires, and each card links to its full reading on zodiactimeline.com.
 
 ## Use the client in your own app
@@ -95,7 +96,7 @@ const [leoToday] = filterHoroscopes(horoscopes, { sign: 'leo', date: todayUtc() 
 
 console.log(leoToday.title, `${leoToday.score}/10`);
 console.log(leoToday.text);
-console.log(`Horoscopes by ${CREDIT.name}: ${CREDIT.url}`); // credit required by the free API
+console.log(`Horoscopes by ${CREDIT.name}: ${CREDIT.url}`); // credit required by the Horoscope API
 ```
 
 Remember to show the credit `<a href="https://zodiactimeline.com">Zodiac Timeline</a>` wherever the horoscopes
@@ -107,7 +108,7 @@ appear.
 npm test
 ```
 
-The tests use the saved response in `../fixtures/feed.sample.xml` and a stubbed `fetch`, so they never call the
+The tests use the saved response in `../fixtures/api-response.sample.xml` and a stubbed `fetch`, so they never call the
 real API.
 
 ## Configuration
@@ -115,4 +116,4 @@ real API.
 | Variable | Default | Purpose |
 |---|---|---|
 | `PORT` | `3000` | Port for the web server |
-| `ZT_FEED_URL` | `https://zodiactimeline.com/feed.xml` | Override the API URL, for example to test error handling |
+| `ZT_API_URL` | `https://zodiactimeline.com/feed.xml` | Override the API URL, for example to test error handling |

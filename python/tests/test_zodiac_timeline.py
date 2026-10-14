@@ -13,11 +13,11 @@ from zodiac_timeline import (
     filter_horoscopes,
     list_dates,
     next_refresh_time,
-    parse_feed,
+    parse_response,
 )
 
-# A saved copy of https://zodiactimeline.com/feed.xml, so the tests never hit the network.
-SAMPLE_XML = (Path(__file__).resolve().parents[2] / "fixtures" / "feed.sample.xml").read_bytes()
+# A saved Horoscope API response, so the tests never hit the network.
+SAMPLE_XML = (Path(__file__).resolve().parents[2] / "fixtures" / "api-response.sample.xml").read_bytes()
 
 
 def ts(value: str) -> float:
@@ -26,7 +26,7 @@ def ts(value: str) -> float:
 
 @pytest.fixture(scope="module")
 def horoscopes():
-    return parse_feed(SAMPLE_XML)
+    return parse_response(SAMPLE_XML)
 
 
 @pytest.fixture(scope="module")
@@ -34,7 +34,7 @@ def dates(horoscopes):
     return list_dates(horoscopes)
 
 
-# parse_feed
+# parse_response
 
 
 def test_returns_60_horoscopes_12_signs_by_5_days(horoscopes, dates):
@@ -58,12 +58,12 @@ def test_sorts_by_date_then_zodiac_order(horoscopes, dates):
 
 def test_returns_none_score_when_an_item_has_no_valid_score():
     xml = re.sub(rb"<zt:score>[^<]*</zt:score>", b"<zt:score></zt:score>", SAMPLE_XML, count=1)
-    assert sum(h["score"] is None for h in parse_feed(xml)) == 1
+    assert sum(h["score"] is None for h in parse_response(xml)) == 1
 
 
-def test_rejects_xml_that_is_not_the_feed():
+def test_rejects_xml_that_is_not_the_api_response():
     with pytest.raises(ValueError, match="no <item> elements"):
-        parse_feed("<html></html>")
+        parse_response("<html></html>")
 
 
 # helpers
